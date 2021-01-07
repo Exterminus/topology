@@ -5,6 +5,7 @@ Manage the network topology
 import time
 
 from flask import jsonify, request
+from werkzeug.exceptions import BadRequest
 
 from kytos.core import KytosEvent, KytosNApp, log, rest
 from kytos.core.exceptions import KytosLinkCreationError
@@ -280,7 +281,14 @@ class Main(KytosNApp):  # pylint: disable=too-many-public-methods
     @rest('v3/switches/<dpid>/metadata', methods=['POST'])
     def add_switch_metadata(self, dpid):
         """Add metadata to a switch."""
-        metadata = request.get_json()
+        try:
+            metadata = request.get_json()
+        except BadRequest:
+            return jsonify('The request body is not a well-formed JSON.'), 400
+        if metadata is None:
+            return jsonify('The request body mimetype is not'
+                           ' application/json.'), 400
+
         try:
             switch = self.controller.switches[dpid]
         except KeyError:
@@ -394,7 +402,13 @@ class Main(KytosNApp):  # pylint: disable=too-many-public-methods
     @rest('v3/interfaces/<interface_id>/metadata', methods=['POST'])
     def add_interface_metadata(self, interface_id):
         """Add metadata to an interface."""
-        metadata = request.get_json()
+        try:
+            metadata = request.get_json()
+        except BadRequest:
+            return jsonify('The request body is not a well-formed JSON.'), 400
+        if metadata is None:
+            return jsonify('The request body mimetype is not'
+                           ' application/json.'), 400
 
         switch_id = ":".join(interface_id.split(":")[:-1])
         interface_number = int(interface_id.split(":")[-1])
@@ -474,7 +488,14 @@ class Main(KytosNApp):  # pylint: disable=too-many-public-methods
     @rest('v3/links/<link_id>/metadata', methods=['POST'])
     def add_link_metadata(self, link_id):
         """Add metadata to a link."""
-        metadata = request.get_json()
+        try:
+            metadata = request.get_json()
+        except BadRequest:
+            return jsonify('The request body is not a well-formed JSON.'), 400
+        if metadata is None:
+            return jsonify('The request body mimetype is not'
+                           ' application/json.'), 400
+
         try:
             link = self.links[link_id]
         except KeyError:
@@ -827,7 +848,6 @@ class Main(KytosNApp):  # pylint: disable=too-many-public-methods
             all_metadata = self.store_items.get('links', None)
             if all_metadata:
                 metadata = all_metadata.data.get(obj.id)
-
         if metadata:
             obj.extend_metadata(metadata)
             log.debug(f'Metadata to {obj.id} was updated')
