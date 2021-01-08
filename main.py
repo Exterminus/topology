@@ -5,7 +5,7 @@ Manage the network topology
 import time
 
 from flask import jsonify, request
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, UnsupportedMediaType
 
 from kytos.core import KytosEvent, KytosNApp, log, rest
 from kytos.core.exceptions import KytosLinkCreationError
@@ -55,6 +55,19 @@ class Main(KytosNApp):  # pylint: disable=too-many-public-methods
     def shutdown(self):
         """Do nothing."""
         log.info('NApp kytos/topology shutting down.')
+
+    @staticmethod
+    def _get_metadata():
+        """Return a JSON with metadata."""
+        try:
+            metadata = request.get_json()
+        except BadRequest:
+            result = 'The request body is not a well-formed JSON.'
+            raise BadRequest(result)
+        if metadata is None:
+            result = 'The content type must be application/json.'
+            raise UnsupportedMediaType(result)
+        return metadata
 
     def _get_link_or_create(self, endpoint_a, endpoint_b):
         new_link = Link(endpoint_a, endpoint_b)
@@ -281,13 +294,7 @@ class Main(KytosNApp):  # pylint: disable=too-many-public-methods
     @rest('v3/switches/<dpid>/metadata', methods=['POST'])
     def add_switch_metadata(self, dpid):
         """Add metadata to a switch."""
-        try:
-            metadata = request.get_json()
-        except BadRequest:
-            return jsonify('The request body is not a well-formed JSON.'), 400
-        if metadata is None:
-            return jsonify('The request body mimetype is not'
-                           ' application/json.'), 400
+        metadata = self._get_metadata()
 
         try:
             switch = self.controller.switches[dpid]
@@ -402,14 +409,7 @@ class Main(KytosNApp):  # pylint: disable=too-many-public-methods
     @rest('v3/interfaces/<interface_id>/metadata', methods=['POST'])
     def add_interface_metadata(self, interface_id):
         """Add metadata to an interface."""
-        try:
-            metadata = request.get_json()
-        except BadRequest:
-            return jsonify('The request body is not a well-formed JSON.'), 400
-        if metadata is None:
-            return jsonify('The request body mimetype is not'
-                           ' application/json.'), 400
-
+        metadata = self._get_metadata()
         switch_id = ":".join(interface_id.split(":")[:-1])
         interface_number = int(interface_id.split(":")[-1])
         try:
@@ -488,14 +488,7 @@ class Main(KytosNApp):  # pylint: disable=too-many-public-methods
     @rest('v3/links/<link_id>/metadata', methods=['POST'])
     def add_link_metadata(self, link_id):
         """Add metadata to a link."""
-        try:
-            metadata = request.get_json()
-        except BadRequest:
-            return jsonify('The request body is not a well-formed JSON.'), 400
-        if metadata is None:
-            return jsonify('The request body mimetype is not'
-                           ' application/json.'), 400
-
+        metadata = self._get_metadata()
         try:
             link = self.links[link_id]
         except KeyError:

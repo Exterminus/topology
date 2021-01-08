@@ -420,7 +420,7 @@ class TestMain(TestCase):
         payload = None
         response = api.post(url, data=json.dumps(payload),
                             content_type='application/json')
-        self.assertEqual(response.status_code, 400, response.data)
+        self.assertEqual(response.status_code, 415, response.data)
 
     @patch('napps.kytos.topology.main.Main.notify_metadata_changes')
     def test_delete_switch_metadata(self, mock_metadata_changes):
@@ -607,7 +607,7 @@ class TestMain(TestCase):
         payload = None
         response = api.post(url, data=json.dumps(payload),
                             content_type='application/json')
-        self.assertEqual(response.status_code, 400, response.data)
+        self.assertEqual(response.status_code, 415, response.data)
 
     def test_delete_interface_metadata(self):
         """Test delete_interface_metadata."""
@@ -746,7 +746,7 @@ class TestMain(TestCase):
         payload = None
         response = api.post(url, data=json.dumps(payload),
                             content_type='application/json')
-        self.assertEqual(response.status_code, 400, response.data)
+        self.assertEqual(response.status_code, 415, response.data)
 
     @patch('napps.kytos.topology.main.Main.notify_metadata_changes')
     def test_delete_link_metadata(self, mock_metadata_changes):
