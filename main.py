@@ -61,11 +61,16 @@ class Main(KytosNApp):  # pylint: disable=too-many-public-methods
         """Return a JSON with metadata."""
         try:
             metadata = request.get_json()
+            content_type = request.content_type
         except BadRequest:
             result = 'The request body is not a well-formed JSON.'
             raise BadRequest(result)
+        if content_type is None:
+            result = ('The request body is empty.')
+            raise BadRequest(result)
         if metadata is None:
-            result = 'The content type must be application/json.'
+            result = ('The content type must be application/json and not '
+                      f'{content_type}.')
             raise UnsupportedMediaType(result)
         return metadata
 
