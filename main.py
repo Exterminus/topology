@@ -340,6 +340,7 @@ class Main(KytosNApp):  # pylint: disable=too-many-public-methods
         if not error_list:
             log.info(f"Storing administrative state for enabled interfaces.")
             self.save_status_on_storehouse()
+            self.notify_switch_enabled(dpid)  # The switch is also enabled
             return jsonify("Operation successful"), 200
         return jsonify({msg_error:
                         error_list}), 409
